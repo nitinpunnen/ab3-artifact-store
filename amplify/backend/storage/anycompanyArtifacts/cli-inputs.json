@@ -1,0 +1,14 @@
+{
+  "resourceName": "anycompanyArtifacts",
+  "policyUUID": "26682f5c",
+  "bucketName": "npunnen-artifactstore-landingzone",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

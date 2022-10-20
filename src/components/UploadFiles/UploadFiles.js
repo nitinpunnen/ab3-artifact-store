@@ -10,26 +10,26 @@ import {
     TextField,
     View,
 } from '@aws-amplify/ui-react';
-import {listNotes} from "../../graphql/queries";
+import {listArtifacts} from "../../graphql/queries";
 import {
-    createNote as createNoteMutation,
-    deleteNote as deleteNoteMutation,
+    createArtifact as createArtifactMutation,
+    deleteArtifact as deleteArtifactMutation,
 } from "../../graphql/mutations"
 
 const UploadFiles = () => {
-    const [notes, setNotes] = useState([]);
+    const [artifacts, setArtifacts] = useState([]);
 
     useEffect(() => {
-        fetchNotes();
+        fetchArtifacts();
     }, []);
 
-    async function fetchNotes() {
-        const apiData = await API.graphql({query: listNotes});
-        console.log(apiData);
-        const notesFromAPI = apiData.data.listNotes.items;
+    async function fetchArtifacts() {
+        const apiData = await API.graphql({query: listArtifacts});
+        console.log("Fetch Artifacts ", apiData);
+        const notesFromAPI = apiData.data.listArtifacts.items;
         await Promise.all(
             notesFromAPI.map(async (note) => {
-                if (note.image) {
+                if (note.fileName) {
                     const url = await Storage.get(note.name);
                     console.log("Got the url ", url)
                     note.fileUrl = url;
@@ -37,33 +37,34 @@ const UploadFiles = () => {
                 return note;
             })
         );
-        setNotes(notesFromAPI);
+        setArtifacts(notesFromAPI);
     }
 
     async function uploadFile(event) {
         event.preventDefault();
         const form = new FormData(event.target);
-        const image = form.get("image");
+        const fileName = form.get("fileName");
         const data = {
             name: form.get("name"),
             description: form.get("description"),
-            image: image.name,
+            fileName: fileName.name,
         };
-        if (!!data.image) await Storage.put(data.name, image);
+        console.log("Upload file is ", data);
+        if (!!data.fileName) await Storage.put(data.name, fileName);
         await API.graphql({
-            query: createNoteMutation,
+            query: createArtifactMutation,
             variables: {input: data},
         });
-        fetchNotes();
+        fetchArtifacts();
         event.target.reset();
     }
 
     async function deleteNote({id, name}) {
-        const newNotes = notes.filter((note) => note.id !== id);
-        setNotes(newNotes);
+        const newNotes = artifacts.filter((note) => note.id !== id);
+        setArtifacts(newNotes);
         await Storage.remove(name);
         await API.graphql({
-            query: deleteNoteMutation,
+            query: deleteArtifactMutation,
             variables: {input: {id}},
         });
     }
@@ -96,7 +97,7 @@ const UploadFiles = () => {
                         style={{width: "400px"}}
                     />
                     <View
-                        name="image"
+                        name="fileName"
                         as="input"
                         type="file"
                         style={{alignSelf: "end"}}
@@ -122,14 +123,14 @@ const UploadFiles = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {notes.map((note) => (
+                        {artifacts.map((note) => (
                             <TableRow key={note.id || note.name}>
                                 <TableCell>
                                     {note.name}
                                 </TableCell>
                                 <TableCell>{note.description}</TableCell>
                                 <TableCell>{note.createdAt}</TableCell>
-                                <TableCell><a href={note.fileUrl}>{note.image}</a></TableCell>
+                                <TableCell><a href={note.fileUrl}>{note.fileName}</a></TableCell>
                                 <TableCell>
                                     <Button variation="link" onClick={() => deleteNote(note)}>
                                         Delete note
