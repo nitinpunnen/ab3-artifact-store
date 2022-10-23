@@ -1,6 +1,6 @@
 {
-  "resourceName": "anycompanyArtifacts",
-  "policyUUID": "26682f5c",
+  "resourceName": "storageArtifacts",
+  "policyUUID": "38f8dc87",
   "bucketName": "npunnen-artifactstore-landingzone",
   "storageAccess": "auth",
   "guestAccess": [],

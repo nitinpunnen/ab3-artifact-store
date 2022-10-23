@@ -15,12 +15,25 @@ export type AmplifyDependentResourcesAttributes = {
             "GraphQLAPIKeyOutput": "string",
             "GraphQLAPIIdOutput": "string",
             "GraphQLAPIEndpointOutput": "string"
+        },
+        "searchNeptune": {
+            "RootUrl": "string",
+            "ApiName": "string",
+            "ApiId": "string"
         }
     },
     "storage": {
-        "anycompanyArtifacts": {
+        "storageArtifacts": {
             "BucketName": "string",
             "Region": "string"
+        }
+    },
+    "function": {
+        "artifactstoreSearchNeptune": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
         }
     }
 }
