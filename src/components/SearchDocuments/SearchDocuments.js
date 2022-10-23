@@ -6,12 +6,12 @@ import {API} from "aws-amplify";
 const SearchDocuments = () => {
 
     async function searchDocument(value) {
-        const response = await API.get('testApi', '/', {
+        const response = await API.get('searchKendra', '/search', {
             headers: {},
             response: true,
-            pathParameters: {
-                customer: '12',
-            },});
+            queryStringParameters: {
+                query: value
+            }});
         console.log(response);
     }
 

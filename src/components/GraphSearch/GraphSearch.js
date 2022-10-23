@@ -8,6 +8,7 @@ import {
 } from '@aws-amplify/ui-react';
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
+import {API} from "aws-amplify";
 // Load Highcharts modules
 require('highcharts/modules/networkgraph')(Highcharts);
 
@@ -100,8 +101,14 @@ const GraphSearch = () => {
         updateGraph();
     }, []);
 
-    async function updateGraph() {
-
+    async function updateGraph(value) {
+        const response = await API.get('searchNeptune', '/search', {
+            headers: {},
+            response: true,
+            queryStringParameters: {
+                query: value
+            }});
+        console.log(response);
     }
 
     return (
@@ -120,6 +127,7 @@ const GraphSearch = () => {
                     label="Search"
                     placeholder="Search for Entities..."
                     size={"large"}
+                    onSubmit={(value) => updateGraph(value)}
                 />
             </Flex>
             <HighchartsReact highcharts={Highcharts} options={options} containerProps={{ style: { height: "800px", display: "block", width: "90%", margin: "0 auto" } }}/>
