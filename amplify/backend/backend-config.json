@@ -41,34 +41,12 @@
           "additionalAuthenticationProviders": []
         }
       }
-    },
-    "searchNeptune": {
-      "service": "API Gateway",
-      "providerPlugin": "awscloudformation",
-      "dependsOn": [
-        {
-          "category": "function",
-          "resourceName": "artifactstoreSearchNeptune",
-          "attributes": [
-            "Name",
-            "Arn"
-          ]
-        }
-      ]
     }
   },
   "storage": {
     "storageArtifacts": {
       "service": "S3",
       "providerPlugin": "awscloudformation",
-      "dependsOn": []
-    }
-  },
-  "function": {
-    "artifactstoreSearchNeptune": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda",
       "dependsOn": []
     }
   }
