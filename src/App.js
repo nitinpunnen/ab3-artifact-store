@@ -32,7 +32,7 @@ const App = ({signOut}) => {
                     </Flex>
                     <Flex
                         direction={{base: 'row', large: 'row'}}
-                        width="90%"
+                        width="100%"
                         style={{alignItems: "center", margin: "0 auto"}}
                     >
                         <Link className="Navbar-Item" to="/">Home</Link>

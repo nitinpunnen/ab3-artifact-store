@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './SearchDocuments.css';
 import {Flex, Heading, SearchField} from "@aws-amplify/ui-react";
 import {API} from "aws-amplify";
 
 const SearchDocuments = () => {
+    const [resultItems, setResultItems] = useState([]);
 
     async function searchDocument(value) {
         const response = await API.get('searchKendra', '/search', {
@@ -12,7 +13,9 @@ const SearchDocuments = () => {
             queryStringParameters: {
                 query: value
             }});
-        console.log(response);
+        const resultItems = response.data.ResultItems;
+        console.log(resultItems);
+        setResultItems(resultItems);
     }
 
     return (
@@ -24,7 +27,7 @@ const SearchDocuments = () => {
             <Heading level={4} style={{textAlign: "left"}}>Document Search</Heading>
             <Flex direction={{base: 'row', large: 'row'}}
                   padding="1rem"
-                  width="50%"
+                  width="60%"
                   style={{alignItems: "center", margin: "auto", display: "block"}}
             >
                 <SearchField
@@ -33,6 +36,17 @@ const SearchDocuments = () => {
                     size={"large"}
                     onSubmit={(value) => searchDocument(value)}
                 />
+            </Flex>
+            <Flex
+                direction={{base: 'column', large: 'column'}}
+                padding="1rem"
+                width="60%"
+                style={{alignItems: "center", margin: "auto", display: "block"}}>
+                <ul className="result-list">
+                    {resultItems.map(function(item, index){
+                        return <li key={ index }>{item.DocumentTitle.Text}</li>;
+                    })}
+                </ul>
             </Flex>
         </Flex>
     );

@@ -18,14 +18,18 @@ import {
 
 const UploadFiles = () => {
     const [artifacts, setArtifacts] = useState([]);
+    const [files, setFiles] = useState([]);
 
     useEffect(() => {
         fetchArtifacts();
     }, []);
 
+    useEffect(() => {
+        console.log('Files', files);
+    }, [files])
+
     async function fetchArtifacts() {
         const apiData = await API.graphql({query: listArtifacts});
-        console.log("Fetch Artifacts ", apiData);
         const notesFromAPI = apiData.data.listArtifacts.items;
         await Promise.all(
             notesFromAPI.map(async (note) => {
@@ -40,22 +44,22 @@ const UploadFiles = () => {
         setArtifacts(notesFromAPI);
     }
 
-    async function uploadFile(event) {
+    async function uploadFiles(event) {
         event.preventDefault();
-        const form = new FormData(event.target);
-        const fileName = form.get("fileName");
-        const data = {
-            name: form.get("name"),
-            description: form.get("description"),
-            fileName: fileName.name,
-        };
-        console.log("Upload file is ", data);
-        if (!!data.fileName) await Storage.put(data.name, fileName);
-        await API.graphql({
-            query: createArtifactMutation,
-            variables: {input: data},
-        });
-        fetchArtifacts();
+        for (const item of files) {
+            const data = {
+                name: item.documentName == null? item.name : item.documentName,
+                description: item.description,
+                fileName: item.name,
+            };
+            console.log("Upload file is "+ JSON.stringify(data));
+            if (!!data.fileName) await Storage.put(data.name, item.name);
+            await API.graphql({
+                query: createArtifactMutation,
+                variables: {input: data},
+            });
+        }
+        await fetchArtifacts();
         event.target.reset();
     }
 
@@ -69,6 +73,12 @@ const UploadFiles = () => {
         });
     }
 
+    function removeFile(index) {
+        console.log("Am here ", index);
+        const newFiles = files.filter((item, i) => i !== index);
+        setFiles(newFiles);
+    }
+
     return (
         <Flex
             direction={{base: 'column', large: 'column'}}
@@ -77,39 +87,77 @@ const UploadFiles = () => {
             style={{display: "block", margin: "10px auto"}}
         >
             <Heading level={3} style={{textAlign: "left"}}>Upload Files</Heading>
-            <View as="form" margin="3rem 0" onSubmit={uploadFile}>
-                <Flex direction="row" justifyContent="left" style={{width: "70%"}}>
-                    <TextField
-                        name="name"
-                        placeholder="Document Name"
-                        label="Document Name"
-                        labelHidden
-                        variation="quiet"
-                        required
-                    />
-                    <TextField
-                        name="description"
-                        placeholder="Add a short description"
-                        label="Short Description"
-                        labelHidden
-                        variation="quiet"
-                        required
-                        style={{width: "400px"}}
-                    />
+            <View as="form" margin="3rem 0" onSubmit={uploadFiles}>
+                <Flex direction="row" alignItems="center" justifyContent="center"
+                      style={{width: "70%", margin: "10px auto"}}>
                     <View
                         name="fileName"
                         as="input"
                         type="file"
-                        style={{alignSelf: "end"}}
+                        multiple
+                        onChange={ (event) => {
+                            const chosenFiles = Array.prototype.slice.call(event.target.files);
+                            setFiles(chosenFiles);
+                        }}
                     />
                     <Button type="submit" variation="primary">
-                        Upload File
+                        Upload Files
                     </Button>
                 </Flex>
+                <Table
+                    className="my-custom-table"
+                    caption=""
+                    cellPadding="30px"
+                    highlightOnHover="true">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell as="th">File Name</TableCell>
+                            <TableCell as="th">Document Name</TableCell>
+                            <TableCell as="th">Description</TableCell>
+                            <TableCell as="th"></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {files.map((item, index) => {
+                            return <TableRow key={index}>
+                                <TableCell>
+                                    {item.name}
+                                </TableCell>
+                                <TableCell>
+                                <TextField
+                                    name="name"
+                                    placeholder={item.name}
+                                    label="Document Name"
+                                    labelHidden
+                                    variation="quiet"
+                                    onBlur={(e) => item.documentName = e.target.value}
+                                />
+                                </TableCell>
+                                <TableCell>
+                                <TextField
+                                    name="description"
+                                    placeholder="Add a short description"
+                                    label="Short Description"
+                                    labelHidden
+                                    variation="quiet"
+                                    onBlur={(e) => item.description = e.target.value}
+                                    style={{width: "400px"}}
+                                />
+                                </TableCell>
+                                <TableCell>
+                                    <Button variation="link" onClick={() => removeFile(index)}>
+                                        Remove
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        })}
+                    </TableBody>
+                </Table>
             </View>
             <Heading level={4}>Uploaded Files</Heading>
             <View margin="3rem 0">
                 <Table
+                    className="my-custom-table"
                     caption=""
                     cellPadding="30px"
                     highlightOnHover="true">

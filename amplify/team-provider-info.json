@@ -22,11 +22,11 @@
         },
         "artifactStoreSearchKendra": {
           "deploymentBucketName": "amplify-artifactstore-dev-85342-deployment",
-          "s3Key": "amplify-builds/artifactStoreSearchKendra-4d3844712f45452b7652-build.zip"
+          "s3Key": "amplify-builds/artifactStoreSearchKendra-707a42676c7674453158-build.zip"
         },
         "artifactStoreSearchNeptune": {
           "deploymentBucketName": "amplify-artifactstore-dev-85342-deployment",
-          "s3Key": "amplify-builds/artifactStoreSearchNeptune-6f456e735a5832453337-build.zip"
+          "s3Key": "amplify-builds/artifactStoreSearchNeptune-38546c7331346b506e61-build.zip"
         }
       },
       "api": {
