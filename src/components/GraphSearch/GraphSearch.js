@@ -1,9 +1,9 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useState} from "react";
 import "./GraphSearch.css";
 import "@aws-amplify/ui-react/styles.css";
 import {
     Flex,
-    Heading, SearchField, Table, TableBody, TableCell, TableRow
+    Heading, SearchField, Table, TableBody, TableCell, TableRow, Text
 
 } from '@aws-amplify/ui-react';
 import Highcharts from 'highcharts'
@@ -20,6 +20,7 @@ require('highcharts/modules/networkgraph')(Highcharts);
 
 const GraphSearch = () => {
     const [resultItems, setResultItems] = useState([{}]);
+    const [selectedNode, setSelectedNode] = useState('');
     const [chartOptions, setChartOptions] = useState({
         chart: {
             type: "networkgraph",
@@ -30,16 +31,17 @@ const GraphSearch = () => {
         },
         plotOptions: {
             networkgraph: {
-                keys: ["from", "to"],
                 layoutAlgorithm: {
                     enableSimulation: true,
                     gravitationalConstant: 0.2,
+                    linkLength: 60,
                     friction: -0.9
                 },
                 point: {
                     events: {
                         click: (e) => {
-                            updateGraph(e.point.id)
+                            updateGraph(e.point.id);
+                            setSelectedNode(e.point.id);
                         }
                     },
                 }
@@ -52,9 +54,9 @@ const GraphSearch = () => {
                 },
                 dataLabels: {
                     enabled: true,
-                    linkFormat: "",
-                    allowOverlap: true,
-                    verticalAlign: "bottom"
+                    linkFormat: '{point.label}',
+                    allowOverlap: false,
+                    y: -10
                 },
                 data: [
                 ],
@@ -81,7 +83,10 @@ const GraphSearch = () => {
         for (let i = 0; i < resultItems.length; i++) {
             //Ignore the first Result Item to create the data. But need it for nodes
             if (i !== 0) {
-                const dataNode = [resultItems[0].name[0], resultItems[i].name[0]];
+                const dataNode = {
+                    'from': resultItems[0].name[0],
+                    'to': resultItems[i].name[0],
+                    'label': resultItems[i].relationship};
                 networkData.push(dataNode);
             }
             let symbolUrl = null;
@@ -129,6 +134,10 @@ const GraphSearch = () => {
                     label="Search"
                     placeholder="Search for Entities..."
                     size={"large"}
+                    onChange={(event) => {
+                        setSelectedNode(event.target.value);
+                    }}
+                    value={selectedNode}
                     onSubmit={(value) => updateGraph(value)}
                 />
             </Flex>
@@ -137,7 +146,6 @@ const GraphSearch = () => {
                   width="100%"
                   style={{alignItems: "center"}}
             >
-                {/*<Text>{JSON.stringify(options)}</Text>*/}
                 {(chartOptions.series[0].data.length > 0) && <HighchartsReact highcharts={Highcharts} options={chartOptions} containerProps={{
                     style: {
                         height: "600px",
@@ -161,7 +169,10 @@ const GraphSearch = () => {
                                 return (
                                     <TableRow key={key}>
                                         <TableCell>
-                                            {key}: {resultItems[0][key]}
+                                            {key}
+                                        </TableCell>
+                                        <TableCell>
+                                            <strong>{resultItems[0][key]}</strong>
                                         </TableCell>
                                     </TableRow>
                                 );

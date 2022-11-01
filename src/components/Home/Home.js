@@ -13,12 +13,16 @@ import bgVideo from "../../assets/GettyImages-483749109.mp4";
 const Home = () => {
     return (
         <View className="Home">
-            {/*<Flex direction={{base: 'row', large: 'row'}} className="video-container">*/}
-            {/*    <video className="video-bg" playsInline={true} autoPlay={true} muted={true} loop={true} id="bgvid">*/}
-            {/*        <source src={bgVideo}></source>*/}
-            {/*    </video>*/}
-            {/*    <Heading level={5}>Search Documents</Heading>*/}
-            {/*</Flex>*/}
+            <Flex direction={{base: 'row', large: 'row'}} className="video-container">
+                <video className="video-bg" playsInline={true} autoPlay={true} muted={true} loop={true} id="bgvid">
+                    <source src={bgVideo}></source>
+                </video>
+                <div className="intro">
+                    <Heading level={1} className="heading">Artifact Store</Heading>
+                    <span className="short-desc">At last, this is what you have been searching for.</span>
+                    <span className="short-desc">Powerful search engine build on machine learning capabilities to provide you the contextual results you are searching for. </span>
+                </div>
+            </Flex>
             <Flex
                 direction={{base: 'row', large: 'row'}}
                 width="70%"
