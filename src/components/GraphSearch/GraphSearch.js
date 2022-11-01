@@ -3,7 +3,7 @@ import "./GraphSearch.css";
 import "@aws-amplify/ui-react/styles.css";
 import {
     Flex,
-    Heading, SearchField, Table, TableBody, TableCell, TableHead, TableRow, Text,
+    Heading, SearchField, Table, TableBody, TableCell, TableRow
 
 } from '@aws-amplify/ui-react';
 import Highcharts from 'highcharts'
@@ -12,66 +12,57 @@ import {API} from "aws-amplify";
 import person from "../../assets/person.png";
 import organization from "../../assets/organization.png";
 import location from "../../assets/location.png";
+import drawing from "../../assets/drawing.png";
+import part from "../../assets/part.png";
+import document from "../../assets/document.png";
 // Load Highcharts modules
 require('highcharts/modules/networkgraph')(Highcharts);
 
-let options = {
-    chart: {
-        type: "networkgraph",
-        marginTop: 20
-    },
-    title: {
-        text: "Anycompany Artifacts"
-    },
-    plotOptions: {
-        networkgraph: {
-            keys: ["from", "to"],
-            layoutAlgorithm: {
-                enableSimulation: true,
-                gravitationalConstant: 0.2,
-                friction: -0.9
-            },
-            point: {
-                events: {
-                    click: (e) => {
-                        console.log(e);
-                    }
-                },
-            }
-        }
-    },
-    series: [
-        {
-            marker: {
-                radius: 10
-            },
-            dataLabels: {
-                enabled: true,
-                linkFormat: "",
-                allowOverlap: true,
-                verticalAlign: "bottom"
-            },
-            data: [
-                ["78291, United Airlines", "81201, Fuselage", "Airplane"]
-            ],
-            nodes: [{
-                id: '78291, United Airlines',
-                color: '#22577A',
-                marker: {radius: 20}
-            }]
-        }
-    ]
-};
-
 const GraphSearch = () => {
-
-    const chartComponent = useRef(null);
-
     const [resultItems, setResultItems] = useState([{}]);
-
-    // useEffect(() => {
-    //     updateGraph();
-    // }, []);
+    const [chartOptions, setChartOptions] = useState({
+        chart: {
+            type: "networkgraph",
+            marginTop: 20
+        },
+        title: {
+            text: ""
+        },
+        plotOptions: {
+            networkgraph: {
+                keys: ["from", "to"],
+                layoutAlgorithm: {
+                    enableSimulation: true,
+                    gravitationalConstant: 0.2,
+                    friction: -0.9
+                },
+                point: {
+                    events: {
+                        click: (e) => {
+                            updateGraph(e.point.id)
+                        }
+                    },
+                }
+            }
+        },
+        series: [
+            {
+                marker: {
+                    radius: 10
+                },
+                dataLabels: {
+                    enabled: true,
+                    linkFormat: "",
+                    allowOverlap: true,
+                    verticalAlign: "bottom"
+                },
+                data: [
+                ],
+                nodes: [{
+                }]
+            }
+        ]
+    });
 
     async function updateGraph(value) {
         const response = await API.get('searchNeptune', '/search', {
@@ -101,6 +92,12 @@ const GraphSearch = () => {
                 symbolUrl = location;
             else if (resultItems[i].label === 'person')
                 symbolUrl = person;
+            else if (resultItems[i].label === 'part')
+                symbolUrl = part;
+            else if (resultItems[i].label === 'drawing')
+                symbolUrl = drawing;
+            else if (resultItems[i].label === 'document')
+                symbolUrl = document;
 
             const nodeNode = {
                 id: resultItems[i].name[0], marker: {
@@ -111,11 +108,9 @@ const GraphSearch = () => {
         }
         console.log('resultItems is ', resultItems);
         console.log('networkNode is ', networkNode);
-        options.series[0].data = networkData;
-        options.series[0].nodes = networkNode;
-        console.log('options is ', options);
-        const chart = chartComponent.current?.chart;
-        chart.redraw();
+        chartOptions.series[0].data = networkData;
+        chartOptions.series[0].nodes = networkNode;
+        console.log('options is ', chartOptions);
     }
 
     return (
@@ -143,15 +138,14 @@ const GraphSearch = () => {
                   style={{alignItems: "center"}}
             >
                 {/*<Text>{JSON.stringify(options)}</Text>*/}
-                <HighchartsReact ref={chartComponent} highcharts={Highcharts} options={options} containerProps={{
+                {(chartOptions.series[0].data.length > 0) && <HighchartsReact highcharts={Highcharts} options={chartOptions} containerProps={{
                     style: {
                         height: "600px",
                         display: "block",
                         width: "70%",
                         margin: "0 auto",
-                        border: "1px solid lightgray"
                     }
-                }}/>
+                }}/>}
                 <Flex
                     direction={{base: 'column', large: 'column'}}
                     padding="1rem"
@@ -161,7 +155,6 @@ const GraphSearch = () => {
                     <Table
                         className="my-custom-table"
                         caption=""
-                        cellPadding="30px"
                         highlightOnHover="true">
                         <TableBody>
                             {Object.keys(resultItems[0]).map(key => {

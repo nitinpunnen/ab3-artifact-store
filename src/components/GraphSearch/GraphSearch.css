@@ -40,3 +40,6 @@
 .highcharts-data-table tr:hover {
     background: #f1f7ff;
 }
+.my-custom-table td {
+    padding: 10px 15px !important;
+}
