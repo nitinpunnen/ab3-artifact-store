@@ -1,18 +1,21 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import "./GraphSearch.css";
 import "@aws-amplify/ui-react/styles.css";
 import {
     Flex,
-    Heading, SearchField,
+    Heading, SearchField, Table, TableBody, TableCell, TableHead, TableRow, Text,
 
 } from '@aws-amplify/ui-react';
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 import {API} from "aws-amplify";
+import person from "../../assets/person.png";
+import organization from "../../assets/organization.png";
+import location from "../../assets/location.png";
 // Load Highcharts modules
 require('highcharts/modules/networkgraph')(Highcharts);
 
-const options = {
+let options = {
     chart: {
         type: "networkgraph",
         marginTop: 20
@@ -22,84 +25,53 @@ const options = {
     },
     plotOptions: {
         networkgraph: {
-            keys: ["from", "to", "type"],
+            keys: ["from", "to"],
             layoutAlgorithm: {
                 enableSimulation: true,
                 gravitationalConstant: 0.2,
                 friction: -0.9
+            },
+            point: {
+                events: {
+                    click: (e) => {
+                        console.log(e);
+                    }
+                },
             }
         }
     },
     series: [
         {
-            events: {
-                click: (e) => {
-                    this.onClick(e);
-                }
-            },
             marker: {
                 radius: 10
             },
             dataLabels: {
                 enabled: true,
                 linkFormat: "",
-                allowOverlap: true
+                allowOverlap: true,
+                verticalAlign: "bottom"
             },
             data: [
-                ["78291, United Airlines", "81201, Fuselage", "Airplane"],
-                ["78291, United Airlines", "32812, Tail"],
-                ["78291, United Airlines", "32918, Wings"],
-                ["78291, United Airlines", "55923, APU"],
-                ["78291, United Airlines", "12311, Engine"],
-                ["78291, United Airlines", "91212, Landing Gear"],
-                ["81201, Fuselage", "32112, 43 Sec"],
-                ["81201, Fuselage", "32113, 44 Sec"],
-                ["81201, Fuselage", "32321, Aft"],
-                ["32321, Aft", "42321, Aft Lwr Cargo Door"],
-                ["42321, Aft Lwr Cargo Door", "42341, Aft Door"],
-                ["32113, 44 Sec", "15441, AOE Doors"],
-                ["32918, Wings", "32391, Inboard Flap"],
-                ["32918, Wings", "12123, Spoilers"],
-                ["32812, Tail", "93212, Tail Cone"],
-                ["32812, Tail", "93241, Rudder"],
-                ["32812, Tail", "93242, Tail Cone Spirit"],
-                ["93212, Tail Cone", "15441, Flap Track Fairing"],
-                ["93212, Tail Cone", "15241, Flap Track"],
-                ["93212, Tail Cone", "15241, Stabilizer Tip"],
-                ["93241, Rudder", "52341, Stabilizer"],
-                ["93241, Rudder", "65341, Cone Spirit"],
-                ["93241, Rudder", "32341, Vertical Fin"],
-                ["93241, Rudder", "35441, Left Fin Panel"],
-                ["93241, Rudder", "15441, Right Fin Panel"],
-                ["15441, Flap Track Fairing", "15241, Aileron"],
-                ["15441, Flap Track Fairing", "96241, Winglet"],
-                ["96241, Winglet", "96241, Inboard Flaps"],
-                ["15241, Flap Track", "96241, Outboard Flaps"],
-                ["15241, Stabilizer Tip", "Konfirmat 23.0"],
-                ["91212, Landing Gear", "Rear Camera 92.1 3/5"],
-                ["91212, Landing Gear", "2322A, Suspension"],
-                ["2322A, Suspension", "Spring Suspension"],
-                ["2322A, Suspension", "Coil Metal 391.2"],
-                ["2322A, Suspension", "Metal Fixture 2.2"],
-                ["12311, Engine", "93242, Engine CFM"],
-                ["12311, Engine", "33242, Fan Cowl"],
-                ["12311, Engine", "32242, Thruster Assembly"],
-                ["12311, Engine", "52242, Primary Exhaust"]
+                ["78291, United Airlines", "81201, Fuselage", "Airplane"]
             ],
             nodes: [{
                 id: '78291, United Airlines',
                 color: '#22577A',
-                marker: { radius: 20 }
-            }],
+                marker: {radius: 20}
+            }]
         }
     ]
 };
 
 const GraphSearch = () => {
 
-    useEffect(() => {
-        updateGraph();
-    }, []);
+    const chartComponent = useRef(null);
+
+    const [resultItems, setResultItems] = useState([{}]);
+
+    // useEffect(() => {
+    //     updateGraph();
+    // }, []);
 
     async function updateGraph(value) {
         const response = await API.get('searchNeptune', '/search', {
@@ -107,8 +79,43 @@ const GraphSearch = () => {
             response: true,
             queryStringParameters: {
                 query: value
-            }});
-        console.log(response);
+            }
+        });
+        const resultItems = response.data;
+        setResultItems(resultItems);
+
+        let networkData = [];
+        let networkNode = [];
+
+        for (let i = 0; i < resultItems.length; i++) {
+            //Ignore the first Result Item to create the data. But need it for nodes
+            if (i !== 0) {
+                const dataNode = [resultItems[0].name[0], resultItems[i].name[0]];
+                networkData.push(dataNode);
+            }
+            let symbolUrl = null;
+
+            if (resultItems[i].label === 'organization')
+                symbolUrl = organization;
+            else if (resultItems[i].label === 'location')
+                symbolUrl = location;
+            else if (resultItems[i].label === 'person')
+                symbolUrl = person;
+
+            const nodeNode = {
+                id: resultItems[i].name[0], marker: {
+                    symbol: 'url(' + symbolUrl + ')',
+                }
+            };
+            networkNode.push(nodeNode);
+        }
+        console.log('resultItems is ', resultItems);
+        console.log('networkNode is ', networkNode);
+        options.series[0].data = networkData;
+        options.series[0].nodes = networkNode;
+        console.log('options is ', options);
+        const chart = chartComponent.current?.chart;
+        chart.redraw();
     }
 
     return (
@@ -130,8 +137,48 @@ const GraphSearch = () => {
                     onSubmit={(value) => updateGraph(value)}
                 />
             </Flex>
-            <HighchartsReact highcharts={Highcharts} options={options} containerProps={{ style: { height: "800px", display: "block", width: "90%", margin: "0 auto" } }}/>
+            <Flex direction={{base: 'row', large: 'row'}}
+                  padding="1rem"
+                  width="100%"
+                  style={{alignItems: "center"}}
+            >
+                {/*<Text>{JSON.stringify(options)}</Text>*/}
+                <HighchartsReact ref={chartComponent} highcharts={Highcharts} options={options} containerProps={{
+                    style: {
+                        height: "600px",
+                        display: "block",
+                        width: "70%",
+                        margin: "0 auto",
+                        border: "1px solid lightgray"
+                    }
+                }}/>
+                <Flex
+                    direction={{base: 'column', large: 'column'}}
+                    padding="1rem"
+                    width="30%"
+                    height="600px"
+                >
+                    <Table
+                        className="my-custom-table"
+                        caption=""
+                        cellPadding="30px"
+                        highlightOnHover="true">
+                        <TableBody>
+                            {Object.keys(resultItems[0]).map(key => {
+                                return (
+                                    <TableRow key={key}>
+                                        <TableCell>
+                                            {key}: {resultItems[0][key]}
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </Flex>
+            </Flex>
         </Flex>
+
     );
 };
 

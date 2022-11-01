@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import './SearchDocuments.css';
-import {Flex, Heading, SearchField} from "@aws-amplify/ui-react";
+import {Card, Flex, Heading, SearchField, Text} from "@aws-amplify/ui-react";
 import {API} from "aws-amplify";
 
 const SearchDocuments = () => {
@@ -12,7 +12,8 @@ const SearchDocuments = () => {
             response: true,
             queryStringParameters: {
                 query: value
-            }});
+            }
+        });
         const resultItems = response.data.ResultItems;
         console.log(resultItems);
         setResultItems(resultItems);
@@ -22,9 +23,10 @@ const SearchDocuments = () => {
         <Flex
             direction={{base: 'column', large: 'column'}}
             padding="1rem"
-            width="100%"
+            width="90%"
+            style={{display: "block", margin: "10px auto"}}
         >
-            <Heading level={4} style={{textAlign: "left"}}>Document Search</Heading>
+            <Heading level={3} style={{textAlign: "left"}}>Document Search</Heading>
             <Flex direction={{base: 'row', large: 'row'}}
                   padding="1rem"
                   width="60%"
@@ -40,11 +42,21 @@ const SearchDocuments = () => {
             <Flex
                 direction={{base: 'column', large: 'column'}}
                 padding="1rem"
-                width="60%"
                 style={{alignItems: "center", margin: "auto", display: "block"}}>
                 <ul className="result-list">
-                    {resultItems.map(function(item, index){
-                        return <li key={ index }>{item.DocumentTitle.Text}</li>;
+                    {resultItems.map(function (item, index) {
+                        return <li key={index}>
+                            <Card className="custom-card">
+                                <Flex
+                                    direction={{base: 'column', large: 'column'}}
+                                    padding="1rem"
+                                    style={{display: "block", margin: "10px auto", textAlign: "left"}}
+                                >
+                                    <a href={item.DocumentURI}>{item.DocumentTitle.Text}</a>
+                                    <Text>{item.DocumentExcerpt.Text}</Text>
+                                </Flex>
+                            </Card>
+                        </li>;
                     })}
                 </ul>
             </Flex>

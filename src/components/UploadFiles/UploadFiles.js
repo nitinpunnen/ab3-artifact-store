@@ -24,9 +24,8 @@ const UploadFiles = () => {
         fetchArtifacts();
     }, []);
 
-    useEffect(() => {
-        console.log('Files', files);
-    }, [files])
+    // useEffect(() => {
+    // }, [files])
 
     async function fetchArtifacts() {
         const apiData = await API.graphql({query: listArtifacts});
@@ -35,7 +34,6 @@ const UploadFiles = () => {
             notesFromAPI.map(async (note) => {
                 if (note.fileName) {
                     const url = await Storage.get(note.name);
-                    console.log("Got the url ", url)
                     note.fileUrl = url;
                 }
                 return note;
@@ -74,7 +72,6 @@ const UploadFiles = () => {
     }
 
     function removeFile(index) {
-        console.log("Am here ", index);
         const newFiles = files.filter((item, i) => i !== index);
         setFiles(newFiles);
     }
