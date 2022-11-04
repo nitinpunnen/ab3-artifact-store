@@ -46,12 +46,17 @@ const UploadFiles = () => {
         event.preventDefault();
         for (const item of files) {
             const data = {
-                name: item.documentName == null? item.name : item.documentName,
+                name: item.documentName == null ? item.name : item.documentName,
                 description: item.description,
                 fileName: item.name,
             };
-            console.log("Upload file is "+ JSON.stringify(data));
-            if (!!data.fileName) await Storage.put(data.name, item.name);
+            if (!!data.fileName) {
+                console.log("item is ", item);
+                await Storage.put(item.name, item.name, {
+                    metadata: data,
+                    contentType: item.type
+                });
+            }
             await API.graphql({
                 query: createArtifactMutation,
                 variables: {input: data},
@@ -61,10 +66,10 @@ const UploadFiles = () => {
         event.target.reset();
     }
 
-    async function deleteNote({id, name}) {
+    async function deleteNote({id, fileName}) {
         const newNotes = artifacts.filter((note) => note.id !== id);
         setArtifacts(newNotes);
-        await Storage.remove(name);
+        await Storage.remove(fileName);
         await API.graphql({
             query: deleteArtifactMutation,
             variables: {input: {id}},
@@ -92,7 +97,7 @@ const UploadFiles = () => {
                         as="input"
                         type="file"
                         multiple
-                        onChange={ (event) => {
+                        onChange={(event) => {
                             const chosenFiles = Array.prototype.slice.call(event.target.files);
                             setFiles(chosenFiles);
                         }}
@@ -121,25 +126,25 @@ const UploadFiles = () => {
                                     {item.name}
                                 </TableCell>
                                 <TableCell>
-                                <TextField
-                                    name="name"
-                                    placeholder={item.name}
-                                    label="Document Name"
-                                    labelHidden
-                                    variation="quiet"
-                                    onBlur={(e) => item.documentName = e.target.value}
-                                />
+                                    <TextField
+                                        name="name"
+                                        placeholder={item.name}
+                                        label="Document Name"
+                                        labelHidden
+                                        variation="quiet"
+                                        onBlur={(e) => item.documentName = e.target.value}
+                                    />
                                 </TableCell>
                                 <TableCell>
-                                <TextField
-                                    name="description"
-                                    placeholder="Add a short description"
-                                    label="Short Description"
-                                    labelHidden
-                                    variation="quiet"
-                                    onBlur={(e) => item.description = e.target.value}
-                                    style={{width: "400px"}}
-                                />
+                                    <TextField
+                                        name="description"
+                                        placeholder="Add a short description"
+                                        label="Short Description"
+                                        labelHidden
+                                        variation="quiet"
+                                        onBlur={(e) => item.description = e.target.value}
+                                        style={{width: "400px"}}
+                                    />
                                 </TableCell>
                                 <TableCell>
                                     <Button variation="link" onClick={() => removeFile(index)}>
@@ -160,22 +165,22 @@ const UploadFiles = () => {
                     highlightOnHover="true">
                     <TableHead>
                         <TableRow>
-                            <TableCell as="th">Name</TableCell>
+                            <TableCell as="th">File Name</TableCell>
+                            <TableCell as="th">Document Name</TableCell>
                             <TableCell as="th">Description</TableCell>
                             <TableCell as="th">Created At</TableCell>
-                            <TableCell as="th">File Name</TableCell>
                             <TableCell as="th">Action</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {artifacts.map((note) => (
                             <TableRow key={note.id || note.name}>
+                                <TableCell><a href={note.fileUrl}>{note.fileName}</a></TableCell>
                                 <TableCell>
                                     {note.name}
                                 </TableCell>
                                 <TableCell>{note.description}</TableCell>
                                 <TableCell>{note.createdAt}</TableCell>
-                                <TableCell><a href={note.fileUrl}>{note.fileName}</a></TableCell>
                                 <TableCell>
                                     <Button variation="link" onClick={() => deleteNote(note)}>
                                         Delete note
