@@ -52,7 +52,7 @@ const UploadFiles = () => {
             };
             if (!!data.fileName) {
                 console.log("item is ", item);
-                await Storage.put(item.name, item.name, {
+                await Storage.put(item.name, item, {
                     metadata: data,
                     contentType: item.type
                 });
@@ -64,6 +64,7 @@ const UploadFiles = () => {
         }
         await fetchArtifacts();
         event.target.reset();
+        setFiles([]);
     }
 
     async function deleteNote({id, fileName}) {
