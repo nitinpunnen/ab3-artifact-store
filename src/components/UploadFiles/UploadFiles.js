@@ -41,7 +41,7 @@ const UploadFiles = () => {
         );
         setArtifacts(notesFromAPI);
 
-        
+
     }
 
     async function uploadFiles(event) {

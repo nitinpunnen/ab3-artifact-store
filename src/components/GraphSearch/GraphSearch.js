@@ -76,6 +76,7 @@ const GraphSearch = () => {
         });
         const resultItems = response.data;
         setResultItems(resultItems);
+        console.log('resultItems is ', resultItems);
 
         let networkData = [];
         let networkNode = [];
@@ -111,7 +112,6 @@ const GraphSearch = () => {
             };
             networkNode.push(nodeNode);
         }
-        console.log('resultItems is ', resultItems);
         console.log('networkNode is ', networkNode);
         chartOptions.series[0].data = networkData;
         chartOptions.series[0].nodes = networkNode;

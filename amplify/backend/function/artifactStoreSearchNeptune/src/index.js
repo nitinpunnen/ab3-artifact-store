@@ -16,23 +16,39 @@ exports.handler = async (event) => {
 
     try {
         let data = [];
-        console.log('Nitin ', event)
+        console.log('Divia ', event)
         const {
-            id,
-            username,
-            touser,
-            userid,
-            tweetid
+            query
         } = event.queryStringParameters || {};
-        console.log("id is ", id);
+        console.log("query is ", query);
 
-        const nodes = await g.V()
-            .hasLabel('User')
-            .limit(1000)
+        // Get the searched object into first array item
+        const searchedNode = await g.V()
+            .has('name', query)
             .valueMap()
             .with_(withTokens)
             .toList();
-        data = nodes.map(row => ({ name: row.name.toString() }));
+        data.push(searchedNode[0]);
+
+        const nodes = await g.V()
+            .has('name', query).both()
+            .valueMap()
+            .with_(withTokens)
+            .toList();
+
+        const relations = await g.V()
+            .has('name', query).bothE()
+            .valueMap()
+            .with_(withTokens)
+            .toList();
+
+        nodes.forEach((element, index) => {
+            element.relationship = relations[index].label;
+            data.push(element);
+        });
+
+        // relations.forEach(element => data.push(element));
+
         console.log("data is ", data);
 
         dc.close();
